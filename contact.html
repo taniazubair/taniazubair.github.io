@@ -9,6 +9,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
+        #particleCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .scroll-progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+            z-index: 10000;
+            width: 0%;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
         .page-header {
             padding: 10rem 0 4rem;
             text-align: center;
@@ -345,6 +364,112 @@
             font-weight: 600;
         }
 
+        /* ===== CREATIVE CONTACT EXTRAS ===== */
+        .contact-cta-banner {
+            padding: 5rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .contact-cta-banner::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0, 223, 143, 0.04) 0%, transparent 70%);
+            pointer-events: none;
+            animation: cta-pulse 6s ease-in-out infinite;
+        }
+
+        .cta-banner-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-banner-sub {
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto 2rem;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-banner-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.1rem 2.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: var(--bg-primary);
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(0, 223, 143, 0.3);
+        }
+
+        .cta-banner-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 223, 143, 0.4);
+        }
+
+        .availability-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .availability-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .availability-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            background: rgba(0, 223, 143, 0.1);
+            border: 1px solid rgba(0, 223, 143, 0.3);
+            border-radius: 100px;
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .availability-status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse-glow 2s infinite;
+        }
+
+        .availability-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
         @media (max-width: 1024px) {
             .contact-grid { grid-template-columns: 1fr; }
             .social-grid { grid-template-columns: 1fr; }
@@ -356,6 +481,9 @@
     </style>
 </head>
 <body>
+    <div class="scroll-progress" id="scrollProgress"></div>
+    <canvas id="particleCanvas"></canvas>
+
     <nav class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">TANIA<span class="logo-dot">.</span></a>
@@ -367,8 +495,10 @@
             <div class="nav-action" onclick="window.location.href='contact.html'">
                 <div class="nav-action-dot"></div>
             </div>
-            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                <span></span><span></span><span></span>
+            <div class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">
+                <span class="bar1"></span>
+                <span class="bar2"></span>
+                <span class="bar3"></span>
             </div>
         </div>
     </nav>
@@ -387,7 +517,7 @@
         </div>
         <h1 class="page-title reveal">LET'S TALK<br>BUSINESS.</h1>
         <p class="page-subtitle reveal">
-            Have a project in mind? I'm always excited to collaborate on new ideas and bring innovative solutions to life.
+            Have a project in mind? I am always excited to collaborate on new ideas and bring innovative solutions to life.
         </p>
     </header>
 
@@ -397,7 +527,7 @@
                 <div class="reveal">
                     <h3 class="contact-info-heading">Contact Information</h3>
                     <p class="contact-info-text">
-                        Feel free to reach out through any of the channels below. I'm responsive and always happy to discuss 
+                        Feel free to reach out through any of the channels below. I am responsive and always happy to discuss 
                         new opportunities, projects, or just have a chat about technology.
                     </p>
 
@@ -440,12 +570,22 @@
                             <span>Islamabad, Pakistan</span>
                         </div>
                     </div>
+
+                    <div class="availability-card reveal">
+                        <div class="availability-status">
+                            <div class="availability-status-dot"></div>
+                            Available for Work
+                        </div>
+                        <p class="availability-text">
+                            Currently looking for internship opportunities. Open to remote work worldwide and local collaborations in Pakistan.
+                        </p>
+                    </div>
                 </div>
 
                 <div class="reveal" style="transition-delay: 0.2s;">
                     <div class="contact-form-card">
                         <h3 class="form-heading">Send a Message</h3>
-                        <p class="form-subtext">Fill out the form below and I'll get back to you as soon as possible.</p>
+                        <p class="form-subtext">Fill out the form below and I will get back to you as soon as possible.</p>
 
                         <iframe 
                             src="https://docs.google.com/forms/d/e/1FAIpQLSdsgu86HrLXijkRcH4Yn40H3o3BozOawHea_kqUqoNy9py0Aw/viewform?embedded=true" 
@@ -455,7 +595,7 @@
                             marginheight="0" 
                             marginwidth="0"
                             style="border-radius: 12px; background: var(--bg-primary);">
-                            Loading…
+                            Loading...
                         </iframe>
 
                         <div class="form-alt" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); text-align: center;">
@@ -468,6 +608,20 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="contact-cta-banner">
+        <div class="section-container">
+            <h2 class="cta-banner-text reveal">READY TO START<br>A PROJECT?</h2>
+            <p class="cta-banner-sub reveal">
+                I am actively looking for internship opportunities and exciting projects to work on. 
+                Let us create something amazing together.
+            </p>
+            <a href="mailto:tzak2004@gmail.com" class="cta-banner-btn reveal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Send Me an Email
+            </a>
         </div>
     </section>
 
@@ -527,7 +681,7 @@
                 <div class="reveal">
                     <h2 class="footer-heading">HOW CAN I<br>HELP?</h2>
                     <p class="footer-text">
-                        I'm always open to discussing new projects, creative ideas, or opportunities to be part of your vision.
+                        I am always open to discussing new projects, creative ideas, or opportunities to be part of your vision.
                     </p>
                     <a href="mailto:tzak2004@gmail.com" class="footer-email-btn">
                         tzak2004@gmail.com
@@ -563,7 +717,10 @@
 
     <script>
         function toggleMobileMenu() {
-            document.getElementById('mobileOverlay').classList.toggle('active');
+            const overlay = document.getElementById('mobileOverlay');
+            const btn = document.getElementById('mobileMenuBtn');
+            overlay.classList.toggle('active');
+            btn.classList.toggle('active');
         }
 
         const revealElements = document.querySelectorAll('.reveal');
@@ -593,6 +750,103 @@
             } else {
                 navbar.classList.remove('scrolled');
             }
+        });
+
+        // ===== PARTICLE SYSTEM =====
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: null, y: null };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (mouse.x != null) {
+                    const dx = mouse.x - this.x;
+                    const dy = mouse.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 150) {
+                        const force = (150 - distance) / 150;
+                        this.x -= dx * force * 0.02;
+                        this.y -= dy * force * 0.02;
+                    }
+                }
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 223, 143, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 80; i++) particles.push(new Particle());
+        }
+        initParticles();
+
+        function connectParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 120) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 223, 143, ${0.15 * (1 - distance / 120)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            connectParticles();
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        // ===== SCROLL PROGRESS =====
+        const scrollProgress = document.getElementById('scrollProgress');
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            scrollProgress.style.width = scrollPercent + '%';
         });
     </script>
 </body>
